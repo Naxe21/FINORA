@@ -922,13 +922,17 @@ if (days < 1) days = 1; // biar nggak 0 atau minus
   });
 
   document.addEventListener('keydown', e => {
-    if (e.key >= '0' && e.key <= '9') appendToken(e.key);
-    else if (['+','-','*','/','%'].includes(e.key)) { const b = document.querySelector(`.calc-btn[data-val="${e.key}"]`); if(b) b.click(); }
-    else if (e.key === '.') document.querySelector('[data-action="dot"]').click();
-    else if (e.key === 'Enter' || e.key === '=') document.querySelector('[data-action="eq"]').click();
-    else if (e.key === 'Backspace') document.querySelector('[data-action="back"]').click();
-    else if (e.key === 'Escape') document.querySelector('[data-action="clear"]').click();
-  });
+  const tag = document.activeElement.tagName;
+  const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+  if (isTyping) return; // jangan proses kalau user lagi di field lain
+
+  if (e.key >= '0' && e.key <= '9') appendToken(e.key);
+  else if (['+','-','*','/','%'].includes(e.key)) { const b = document.querySelector(`.calc-btn[data-val="${e.key}"]`); if(b) b.click(); }
+  else if (e.key === '.') document.querySelector('[data-action="dot"]').click();
+  else if (e.key === 'Enter' || e.key === '=') document.querySelector('[data-action="eq"]').click();
+  else if (e.key === 'Backspace') document.querySelector('[data-action="back"]').click();
+  else if (e.key === 'Escape') document.querySelector('[data-action="clear"]').click();
+});
 })();
 </script>
 </body>
