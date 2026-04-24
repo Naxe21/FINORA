@@ -22,6 +22,8 @@
     --green-dim: rgba(63,185,80,0.10);
     --red: #f85149;
     --red-dim: rgba(248,81,73,0.10);
+    --blue: #58a6ff;
+    --blue-dim: rgba(88,166,255,0.10);
     --radius: 14px;
     --radius-sm: 8px;
   }
@@ -31,7 +33,6 @@
     background: var(--bg);
     color: var(--text);
     min-height: 100vh;
-    padding: 0;
   }
 
   /* ── HEADER ── */
@@ -53,9 +54,15 @@
     font-weight: 600;
     color: var(--gold);
     letter-spacing: 0.04em;
+    cursor: pointer;
   }
-
   .logo span { color: var(--text); font-weight: 400; }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
 
   .header-date {
     font-size: 0.78rem;
@@ -63,6 +70,41 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
+
+  /* ── NAV TABS ── */
+  .nav-tabs {
+    display: flex;
+    gap: 0.25rem;
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 3px;
+  }
+
+  .nav-tab {
+    padding: 0.4rem 1rem;
+    border-radius: 7px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-tab.active {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .nav-tab:hover:not(.active) { color: var(--text); }
+
+  /* ── VIEWS ── */
+  .view { display: none; }
+  .view.active { display: block; }
 
   /* ── MAIN LAYOUT ── */
   main {
@@ -97,9 +139,12 @@
     height: 2px;
   }
 
-  .card.balance::before { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
-  .card.income::before { background: var(--green); }
-  .card.expense::before { background: var(--red); }
+  .card.balance::before  { background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+  .card.income::before   { background: var(--green); }
+  .card.expense::before  { background: var(--red); }
+  .card.savings::before  { background: var(--blue); }
+  .card.s-in::before     { background: var(--green); }
+  .card.s-out::before    { background: var(--red); }
 
   .card-label {
     font-size: 0.72rem;
@@ -118,13 +163,33 @@
   }
 
   .card.balance .card-amount { color: var(--gold); }
-  .card.income .card-amount { color: var(--green); }
+  .card.income .card-amount  { color: var(--green); }
   .card.expense .card-amount { color: var(--red); }
+  .card.savings .card-amount { color: var(--blue); }
+  .card.s-in .card-amount    { color: var(--green); }
+  .card.s-out .card-amount   { color: var(--red); }
 
   .card-sub {
     font-size: 0.72rem;
     color: var(--muted);
     margin-top: 0.5rem;
+  }
+
+  /* ── SAVINGS SHORTCUT on dashboard ── */
+  .card.savings-link {
+    cursor: pointer;
+    border-color: rgba(88,166,255,0.2);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .card.savings-link::before { background: var(--blue); }
+  .card.savings-link:hover { border-color: var(--blue); background: rgba(88,166,255,0.04); }
+  .card.savings-link .card-amount { color: var(--blue); }
+  .card-arrow {
+    position: absolute;
+    bottom: 1.2rem; right: 1.2rem;
+    font-size: 0.75rem;
+    color: var(--blue);
+    opacity: 0.6;
   }
 
   /* ── SECTION GRID ── */
@@ -159,10 +224,7 @@
   }
 
   /* ── FILTERS ── */
-  .filters {
-    display: flex;
-    gap: 0.4rem;
-  }
+  .filters { display: flex; gap: 0.4rem; }
 
   .filter-btn {
     padding: 0.3rem 0.85rem;
@@ -180,6 +242,9 @@
 
   .filter-btn.active,
   .filter-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+  .filter-btn.blue.active,
+  .filter-btn.blue:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-dim); }
 
   /* ── TRANSACTION LIST ── */
   .tx-list { max-height: 440px; overflow-y: auto; }
@@ -209,8 +274,10 @@
     flex-shrink: 0;
   }
 
-  .tx-icon.income { background: var(--green-dim); }
+  .tx-icon.income  { background: var(--green-dim); }
   .tx-icon.expense { background: var(--red-dim); }
+  .tx-icon.savings-in  { background: var(--blue-dim); }
+  .tx-icon.savings-out { background: var(--red-dim); }
 
   .tx-info { flex: 1; min-width: 0; }
 
@@ -223,11 +290,7 @@
     text-overflow: ellipsis;
   }
 
-  .tx-meta {
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-top: 2px;
-  }
+  .tx-meta { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
 
   .tx-amount {
     font-family: 'Cormorant Garamond', serif;
@@ -236,15 +299,15 @@
     flex-shrink: 0;
   }
 
-  .tx-amount.income { color: var(--green); }
-  .tx-amount.expense { color: var(--red); }
+  .tx-amount.income      { color: var(--green); }
+  .tx-amount.expense     { color: var(--red); }
+  .tx-amount.savings-in  { color: var(--blue); }
+  .tx-amount.savings-out { color: var(--red); }
 
   .tx-delete {
     width: 26px; height: 26px;
     border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     border: none;
     background: transparent;
@@ -265,7 +328,7 @@
     font-size: 0.85rem;
   }
 
-  /* ── ADD FORM ── */
+  /* ── FORMS ── */
   .form-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
 
   .type-toggle {
@@ -276,28 +339,7 @@
     padding: 3px;
     gap: 3px;
   }
-.calc-btn {
-  height: 42px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface2);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-family: 'DM Sans', sans-serif;
-  font-weight: 500;
-  transition: background 0.12s, border-color 0.12s, transform 0.08s;
-  display: flex; align-items: center; justify-content: center;
-}
-.calc-btn:hover { background: #232d3f; border-color: rgba(255,255,255,0.14); }
-.calc-btn:active { transform: scale(0.94); }
-.calc-btn.op { color: var(--gold); border-color: rgba(201,168,76,0.2); }
-.calc-btn.op:hover { background: var(--gold-dim); border-color: var(--gold); }
-.calc-btn.eq { background: var(--gold); color: #0d1117; border-color: var(--gold); font-size: 1.1rem; }
-.calc-btn.eq:hover { background: var(--gold-light); }
-.calc-btn.clear { color: var(--red); border-color: rgba(248,81,73,0.2); }
-.calc-btn.clear:hover { background: var(--red-dim); border-color: var(--red); 
-}
+
   .type-btn {
     padding: 0.55rem;
     border-radius: 6px;
@@ -312,8 +354,10 @@
     text-align: center;
   }
 
-  .type-btn.active.income { background: var(--green-dim); color: var(--green); }
+  .type-btn.active.income  { background: var(--green-dim); color: var(--green); }
   .type-btn.active.expense { background: var(--red-dim); color: var(--red); }
+  .type-btn.active.s-in   { background: var(--blue-dim); color: var(--blue); }
+  .type-btn.active.s-out  { background: var(--red-dim); color: var(--red); }
 
   .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
 
@@ -342,6 +386,7 @@
   input:focus, select:focus { border-color: var(--gold); }
   select option { background: var(--surface2); }
 
+  input:disabled { opacity: 0.5; cursor: not-allowed; }
 
   .submit-btn {
     width: 100%;
@@ -362,41 +407,111 @@
   .submit-btn:hover { background: var(--gold-light); }
   .submit-btn:active { transform: scale(0.98); }
 
-  /* ── CHART ── */
-  .chart-panel { margin-top: 0; }
-  .chart-wrap { padding: 1.5rem; }
+  .submit-btn.blue-btn {
+    background: var(--blue);
+    color: #0d1117;
+  }
+  .submit-btn.blue-btn:hover { background: #79c0ff; }
 
+  /* ── CHART ── */
+  .chart-wrap { padding: 1.5rem; }
   canvas { width: 100% !important; }
 
-  /* ── CATEGORY PILLS ── */
-  .cat-bar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    padding: 1rem 1.5rem;
-  }
-.right-col {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.tools-row {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: repeat(2, 3fr);
-  gap: 0.8rem;
-}
-
-  .cat-row {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
+  /* ── CATEGORY BARS ── */
+  .cat-bar { display: flex; flex-direction: column; gap: 0.6rem; padding: 1rem 1.5rem; }
+  .cat-row { display: flex; align-items: center; gap: 0.75rem; }
   .cat-label { font-size: 0.78rem; color: var(--muted); width: 90px; flex-shrink: 0; }
   .cat-track { flex: 1; height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
   .cat-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
   .cat-val { font-size: 0.78rem; color: var(--text); width: 70px; text-align: right; flex-shrink: 0; }
+
+  /* ── TOOLS ROW ── */
+  .tools-row {
+    margin-top: 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem;
+  }
+
+  /* ── CALCULATOR ── */
+  .calc-btn {
+    height: 42px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  .calc-btn:hover { background: #232d3f; border-color: rgba(255,255,255,0.14); }
+  .calc-btn:active { transform: scale(0.94); }
+  .calc-btn.op { color: var(--gold); border-color: rgba(201,168,76,0.2); }
+  .calc-btn.op:hover { background: var(--gold-dim); border-color: var(--gold); }
+  .calc-btn.eq { background: var(--gold); color: #0d1117; border-color: var(--gold); font-size: 1.1rem; }
+  .calc-btn.eq:hover { background: var(--gold-light); }
+  .calc-btn.clear { color: var(--red); border-color: rgba(248,81,73,0.2); }
+  .calc-btn.clear:hover { background: var(--red-dim); border-color: var(--red); }
+
+  /* ── PROGRESS RING (savings goal) ── */
+  .goal-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem;
+    gap: 0.75rem;
+  }
+
+  .goal-ring { transform: rotate(-90deg); }
+
+  .ring-bg   { fill: none; stroke: var(--surface2); stroke-width: 8; }
+  .ring-fill { fill: none; stroke: var(--blue); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+
+  .ring-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--blue);
+    text-align: center;
+    line-height: 1;
+  }
+
+  .ring-sub { font-size: 0.75rem; color: var(--muted); text-align: center; }
+
+  /* ── SAVINGS GOALS LIST ── */
+  .goal-item {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .goal-item:last-child { border-bottom: none; }
+  .goal-item:hover { background: var(--surface2); }
+  .goal-item.active-goal { background: var(--blue-dim); border-left: 3px solid var(--blue); }
+
+  .goal-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; }
+  .goal-item-name { font-size: 0.88rem; font-weight: 500; }
+  .goal-item-pct { font-size: 0.75rem; color: var(--blue); }
+
+  .goal-progress-track { height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .goal-progress-fill { height: 100%; background: var(--blue); border-radius: 2px; transition: width 0.5s ease; }
+
+  .goal-item-amounts { display: flex; justify-content: space-between; margin-top: 0.4rem; }
+  .goal-item-saved { font-size: 0.75rem; color: var(--text); }
+  .goal-item-target { font-size: 0.75rem; color: var(--muted); }
+
+  .goal-delete {
+    border: none; background: transparent; color: var(--muted);
+    cursor: pointer; font-size: 0.8rem; padding: 2px 4px;
+    border-radius: 4px; transition: all 0.15s; opacity: 0;
+  }
+  .goal-item:hover .goal-delete { opacity: 1; }
+  .goal-delete:hover { color: var(--red); background: var(--red-dim); }
 
   /* ── TOAST ── */
   .toast {
@@ -423,42 +538,63 @@
     .cards { grid-template-columns: 1fr; }
     .section-grid { grid-template-columns: 1fr; }
     main { padding: 1.5rem 1rem; }
-    header { padding: 1rem 1.5rem; }
+    header { padding: 1rem 1.5rem; flex-wrap: wrap; gap: 0.75rem; }
+    .header-date { display: none; }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Fin<span>ora</span></div>
-  <div class="header-date" id="header-date"></div>
+  <div class="logo" onclick="showView('dashboard')">Fin<span>ora</span></div>
+  <div class="header-right">
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-view="dashboard">Dashboard</button>
+      <button class="nav-tab" data-view="savings">Savings</button>
+    </nav>
+    <div class="header-date" id="header-date"></div>
+  </div>
 </header>
 
+<!-- ═══════════════════════════════════════════
+     VIEW: DASHBOARD
+═══════════════════════════════════════════ -->
+<div id="view-dashboard" class="view active">
 <main>
 
   <!-- SUMMARY CARDS -->
   <div class="cards">
     <div class="card balance">
       <div class="card-label">Net Balance</div>
-      <div class="card-amount" id="bal">$0.00</div>
-      <div class="card-sub" id="bal-sub">All time</div>
+      <div class="card-amount" id="bal">Rp 0</div>
+      <div class="card-sub">All time</div>
     </div>
     <div class="card income">
       <div class="card-label">Total Income</div>
-      <div class="card-amount" id="tot-inc">$0.00</div>
+      <div class="card-amount" id="tot-inc">Rp 0</div>
       <div class="card-sub" id="inc-count">0 transactions</div>
     </div>
     <div class="card expense">
       <div class="card-label">Total Expenses</div>
-      <div class="card-amount" id="tot-exp">$0.00</div>
+      <div class="card-amount" id="tot-exp">Rp 0</div>
       <div class="card-sub" id="exp-count">0 transactions</div>
+    </div>
+  </div>
+
+  <!-- savings shortcut row -->
+  <div class="cards" style="grid-template-columns: 1fr; margin-top: -1rem;">
+    <div class="card savings-link" onclick="showView('savings')">
+      <div class="card-label">Total Savings</div>
+      <div class="card-amount" id="dash-savings">Rp 0</div>
+      <div class="card-sub" id="dash-savings-sub">Tap to manage savings →</div>
+      <div class="card-arrow">→ Savings</div>
     </div>
   </div>
 
   <!-- MAIN SECTION -->
   <div class="section-grid">
 
-    <!-- LEFT: TRANSACTIONS -->
+    <!-- LEFT -->
     <div>
       <div class="panel">
         <div class="panel-header">
@@ -474,7 +610,6 @@
         </div>
       </div>
 
-      <!-- CATEGORY BREAKDOWN -->
       <div class="panel" style="margin-top:1rem;">
         <div class="panel-header">
           <div class="panel-title">Spending by Category</div>
@@ -483,135 +618,260 @@
           <div class="tx-empty" style="padding:1.5rem;">No expense data yet.</div>
         </div>
       </div>
-      <div class="tools-row"> 
-<!-- CALCULATOR -->
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-title">Calculator</div>
-  </div>
-  <div class="form-body" style="gap:0.75rem;">
 
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.75rem 1rem;text-align:right;min-height:64px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;">
-      <div style="font-size:0.72rem;color:var(--muted);min-height:14px;word-break:break-all;" id="calc-expr"></div>
-      <div style="font-size:1.6rem;font-weight:600;color:var(--text);font-family:'Cormorant Garamond',serif;word-break:break-all;line-height:1.1;" id="calc-display">0</div>
+      <div class="tools-row">
+
+        <!-- CALCULATOR -->
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Calculator</div></div>
+          <div class="form-body" style="gap:0.75rem;">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.75rem 1rem;min-height:64px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;text-align:right;">
+              <div style="font-size:0.72rem;color:var(--muted);min-height:14px;word-break:break-all;" id="calc-expr"></div>
+              <div style="font-size:1.6rem;font-weight:600;color:var(--text);font-family:'Cormorant Garamond',serif;word-break:break-all;line-height:1.1;" id="calc-display">0</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+              <button class="calc-btn clear" data-action="clear">C</button>
+              <button class="calc-btn" data-action="back">⌫</button>
+              <button class="calc-btn op" data-action="op" data-val="%">%</button>
+              <button class="calc-btn op" data-action="op" data-val="/">÷</button>
+              <button class="calc-btn" data-action="num" data-val="7">7</button>
+              <button class="calc-btn" data-action="num" data-val="8">8</button>
+              <button class="calc-btn" data-action="num" data-val="9">9</button>
+              <button class="calc-btn op" data-action="op" data-val="*">×</button>
+              <button class="calc-btn" data-action="num" data-val="4">4</button>
+              <button class="calc-btn" data-action="num" data-val="5">5</button>
+              <button class="calc-btn" data-action="num" data-val="6">6</button>
+              <button class="calc-btn op" data-action="op" data-val="-">−</button>
+              <button class="calc-btn" data-action="num" data-val="1">1</button>
+              <button class="calc-btn" data-action="num" data-val="2">2</button>
+              <button class="calc-btn" data-action="num" data-val="3">3</button>
+              <button class="calc-btn op" data-action="op" data-val="+">+</button>
+              <button class="calc-btn" data-action="num000" style="font-size:0.78rem;color:var(--muted);">000</button>
+              <button class="calc-btn" data-action="num" data-val="0">0</button>
+              <button class="calc-btn" data-action="dot">.</button>
+              <button class="calc-btn eq" data-action="eq">=</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BUDGET PLANNER -->
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title">Budget Planner</div></div>
+          <div class="form-body">
+            <div class="form-group">
+              <label class="form-label">Next Salary Date</label>
+              <input type="date" id="next-salary-date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Remaining Days</label>
+              <input type="text" id="remaining-days" disabled>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Daily Budget</label>
+              <input type="text" id="daily-budget" disabled>
+            </div>
+            <button class="submit-btn" id="calc-budget">Calculate</button>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-      <button class="calc-btn clear" data-action="clear">C</button>
-      <button class="calc-btn back"  data-action="back">⌫</button>
-      <button class="calc-btn op"   data-action="op" data-val="%">%</button>
-      <button class="calc-btn op"   data-action="op" data-val="/">÷</button>
-
-      <button class="calc-btn" data-action="num" data-val="7">7</button>
-      <button class="calc-btn" data-action="num" data-val="8">8</button>
-      <button class="calc-btn" data-action="num" data-val="9">9</button>
-      <button class="calc-btn op" data-action="op" data-val="*">×</button>
-
-      <button class="calc-btn" data-action="num" data-val="4">4</button>
-      <button class="calc-btn" data-action="num" data-val="5">5</button>
-      <button class="calc-btn" data-action="num" data-val="6">6</button>
-      <button class="calc-btn op" data-action="op" data-val="-">−</button>
-
-      <button class="calc-btn" data-action="num" data-val="1">1</button>
-      <button class="calc-btn" data-action="num" data-val="2">2</button>
-      <button class="calc-btn" data-action="num" data-val="3">3</button>
-      <button class="calc-btn op" data-action="op" data-val="+">+</button>
-
-      <button class="calc-btn" data-action="num000" style="font-size:0.78rem;color:var(--muted);">000</button>
-      <button class="calc-btn" data-action="num" data-val="0">0</button>
-      <button class="calc-btn" data-action="dot">.</button>
-      <button class="calc-btn eq" data-action="eq">=</button>
-    </div>
-
-  </div>
-</div>
-<!-- BUDGET PLANNER -->
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-title">Budget Planner</div>
-  </div>
-  <div class="form-body">
-
-    <div class="form-group">
-      <label class="form-label">Next Salary Date</label>
-      <input type="date" id="next-salary-date">
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Remaining Days</label>
-      <input type="text" id="remaining-days" disabled>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Daily Budget Recommendation</label>
-      <input type="text" id="daily-budget" disabled>
-    </div>
-
-    <button class="submit-btn" id="calc-budget">Calculate</button>
-
-  </div>
-</div>
-
-    </div>
-    </div>
-    <!-- RIGHT: ADD FORM + CHART -->
+    <!-- RIGHT -->
     <div style="display:flex;flex-direction:column;gap:1rem;">
 
       <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Add Transaction</div>
-        </div>
+        <div class="panel-header"><div class="panel-title">Add Transaction</div></div>
         <div class="form-body">
-
           <div class="type-toggle">
             <button class="type-btn active income" data-type="income">+ Income</button>
-            <button class="type-btn expense" data-type="expense">- Expense</button>
+            <button class="type-btn expense" data-type="expense">− Expense</button>
           </div>
-
           <div class="form-group">
             <label class="form-label">Description</label>
             <input type="text" id="f-desc" placeholder="e.g. Freelance payment" maxlength="50">
           </div>
-
           <div class="form-group">
             <label class="form-label">Amount</label>
             <input type="number" id="f-amount" placeholder="0" min="0" step="1000">
           </div>
-
           <div class="form-group">
             <label class="form-label">Category</label>
             <select id="f-cat"></select>
           </div>
-
           <div class="form-group">
             <label class="form-label">Date</label>
             <input type="date" id="f-date">
           </div>
-
           <button class="submit-btn" id="add-btn">Add Transaction</button>
         </div>
       </div>
-      <!-- MINI CHART -->
-      <div class="panel chart-panel">
-        <div class="panel-header">
-          <div class="panel-title">Overview</div>
-        </div>
+
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Overview</div></div>
         <div class="chart-wrap">
           <canvas id="chart" height="160"></canvas>
         </div>
-  </div>
-  
-      
       </div>
+
     </div>
   </div>
 
 </main>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     VIEW: SAVINGS
+═══════════════════════════════════════════ -->
+<div id="view-savings" class="view">
+<main>
+
+  <!-- SAVINGS SUMMARY CARDS -->
+  <div class="cards">
+    <div class="card savings">
+      <div class="card-label">Total Savings</div>
+      <div class="card-amount" id="sv-total">Rp 0</div>
+      <div class="card-sub">All goals combined</div>
+    </div>
+    <div class="card s-in">
+      <div class="card-label">Total Added</div>
+      <div class="card-amount" id="sv-in">Rp 0</div>
+      <div class="card-sub" id="sv-in-count">0 deposits</div>
+    </div>
+    <div class="card s-out">
+      <div class="card-label">Total Withdrawn</div>
+      <div class="card-amount" id="sv-out">Rp 0</div>
+      <div class="card-sub" id="sv-out-count">0 withdrawals</div>
+    </div>
+  </div>
+
+  <div class="section-grid">
+
+    <!-- LEFT: GOAL LIST + HISTORY -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- GOALS -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Savings Goals</div>
+          <div class="filters">
+            <button class="filter-btn blue active" data-sv-filter="all">All</button>
+            <button class="filter-btn blue" data-sv-filter="active">Active</button>
+            <button class="filter-btn blue" data-sv-filter="done">Completed</button>
+          </div>
+        </div>
+        <div id="goals-list">
+          <div class="tx-empty">No goals yet. Create one →</div>
+        </div>
+      </div>
+
+      <!-- SELECTED GOAL DETAIL -->
+      <div class="panel" id="goal-detail-panel" style="display:none;">
+        <div class="panel-header">
+          <div class="panel-title" id="goal-detail-name">Goal Detail</div>
+          <div class="ring-label" id="goal-detail-pct" style="font-size:0.9rem;color:var(--blue);">0%</div>
+        </div>
+        <div class="goal-ring-wrap">
+          <svg class="goal-ring" width="120" height="120" viewBox="0 0 120 120">
+            <circle class="ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+          </svg>
+          <div class="ring-sub" id="goal-detail-amounts">Rp 0 / Rp 0</div>
+        </div>
+      </div>
+
+      <!-- TRANSACTION HISTORY -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">History</div>
+          <div style="font-size:0.75rem;color:var(--muted);" id="sv-history-label">All goals</div>
+        </div>
+        <div class="tx-list" id="sv-history">
+          <div class="tx-empty">No transactions yet.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: ADD GOAL + ADD FUNDS -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- CREATE GOAL -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">New Goal</div></div>
+        <div class="form-body">
+          <div class="form-group">
+            <label class="form-label">Goal Name</label>
+            <input type="text" id="sv-goal-name" placeholder="e.g. Emergency Fund" maxlength="40">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Amount</label>
+            <input type="number" id="sv-goal-target" placeholder="0" min="0" step="100000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Target Date (optional)</label>
+            <input type="date" id="sv-goal-date">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Icon</label>
+            <select id="sv-goal-icon">
+              <option value="🎯">🎯 General</option>
+              <option value="🏠">🏠 House</option>
+              <option value="✈️">✈️ Travel</option>
+              <option value="🚗">🚗 Vehicle</option>
+              <option value="📱">📱 Gadget</option>
+              <option value="🎓">🎓 Education</option>
+              <option value="💍">💍 Wedding</option>
+              <option value="🏥">🏥 Health</option>
+              <option value="🛡️">🛡️ Emergency</option>
+              <option value="💼">💼 Business</option>
+            </select>
+          </div>
+          <button class="submit-btn blue-btn" id="sv-add-goal">Create Goal</button>
+        </div>
+      </div>
+
+      <!-- ADD / WITHDRAW FUNDS -->
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Move Funds</div></div>
+        <div class="form-body">
+          <div class="type-toggle">
+            <button class="type-btn active s-in" data-sv-type="in">+ Add Funds</button>
+            <button class="type-btn s-out" data-sv-type="out">− Withdraw</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Goal</label>
+            <select id="sv-fund-goal"></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Amount</label>
+            <input type="number" id="sv-fund-amount" placeholder="0" min="0" step="100000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Note (optional)</label>
+            <input type="text" id="sv-fund-note" placeholder="e.g. Monthly deposit" maxlength="50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Date</label>
+            <input type="date" id="sv-fund-date">
+          </div>
+          <button class="submit-btn blue-btn" id="sv-add-fund">Confirm</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
+// ═══════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════
 const CATS = {
   income:  ['Salary','Freelance','Investment','Gift','Other Income'],
   expense: ['Food','Transport','Housing','Utilities','Health','Shopping','Entertainment','Education','Other']
@@ -624,14 +884,31 @@ const CAT_COLORS = {
   'Gift':'#d2a8ff','Other Income':'#7d8590'
 };
 
-let transactions = JSON.parse(localStorage.getItem('finora_tx') || '[]');
-let currentType = 'income';
-let currentFilter = 'all';
-let chart = null;
+let transactions   = JSON.parse(localStorage.getItem('finora_tx')    || '[]');
+let savingsGoals   = JSON.parse(localStorage.getItem('finora_goals') || '[]');
+let savingsTx      = JSON.parse(localStorage.getItem('finora_stx')   || '[]');
+let currentType    = 'income';
+let currentFilter  = 'all';
+let currentSvType  = 'in';
+let currentSvFilter = 'all';
+let selectedGoalId = null;
+let chart          = null;
 
-function save() { localStorage.setItem('finora_tx', JSON.stringify(transactions)); }
+function save() {
+  localStorage.setItem('finora_tx',    JSON.stringify(transactions));
+  localStorage.setItem('finora_goals', JSON.stringify(savingsGoals));
+  localStorage.setItem('finora_stx',   JSON.stringify(savingsTx));
+}
 
-function fmt(n) { return 'Rp\u00a0' + Math.abs(n).toLocaleString('id-ID', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+function fmt(n) {
+  return 'Rp\u00a0' + Math.abs(n).toLocaleString('id-ID', {minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  const [y,m,day] = d.split('-');
+  return new Date(y,m-1,day).toLocaleDateString('id-ID',{month:'short',day:'numeric',year:'numeric'});
+}
 
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -640,24 +917,48 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
+// ═══════════════════════════════════════════
+// VIEW SWITCHING
+// ═══════════════════════════════════════════
+function showView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.view === name);
+  });
+  if (name === 'savings') renderSavings();
+}
+
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => showView(tab.dataset.view));
+});
+
+// ═══════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════
 function updateCatOptions() {
   const sel = document.getElementById('f-cat');
   sel.innerHTML = CATS[currentType].map(c => `<option>${c}</option>`).join('');
 }
 
 function render() {
-  const inc = transactions.filter(t => t.type === 'income');
-  const exp = transactions.filter(t => t.type === 'expense');
+  const inc    = transactions.filter(t => t.type === 'income');
+  const exp    = transactions.filter(t => t.type === 'expense');
   const totInc = inc.reduce((s,t) => s + t.amount, 0);
   const totExp = exp.reduce((s,t) => s + t.amount, 0);
-  const bal = totInc - totExp;
+  const bal    = totInc - totExp;
 
-  document.getElementById('bal').textContent = fmt(bal);
-  document.getElementById('tot-inc').textContent = fmt(totInc);
-  document.getElementById('tot-exp').textContent = fmt(totExp);
+  // savings total
+  const svTotal = savingsGoals.reduce((s,g) => s + g.saved, 0);
+
+  document.getElementById('bal').textContent       = fmt(bal);
+  document.getElementById('tot-inc').textContent   = fmt(totInc);
+  document.getElementById('tot-exp').textContent   = fmt(totExp);
   document.getElementById('inc-count').textContent = inc.length + ' transaction' + (inc.length !== 1 ? 's' : '');
   document.getElementById('exp-count').textContent = exp.length + ' transaction' + (exp.length !== 1 ? 's' : '');
-  document.getElementById('bal').style.color = bal < 0 ? 'var(--red)' : 'var(--gold)';
+  document.getElementById('bal').style.color       = bal < 0 ? 'var(--red)' : 'var(--gold)';
+  document.getElementById('dash-savings').textContent = fmt(svTotal);
+  document.getElementById('dash-savings-sub').textContent = savingsGoals.length + ' goal' + (savingsGoals.length !== 1 ? 's' : '') + ' · tap to manage →';
 
   renderList();
   renderCats();
@@ -687,7 +988,7 @@ function renderList() {
         <div class="tx-name">${tx.desc}</div>
         <div class="tx-meta">${tx.category} · ${formatDate(tx.date)}</div>
       </div>
-      <div class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '-'}${fmt(tx.amount)}</div>
+      <div class="tx-amount ${tx.type}">${tx.type === 'income' ? '+' : '−'}${fmt(tx.amount)}</div>
       <button class="tx-delete" onclick="deleteTx('${tx.id}')" title="Delete">✕</button>
     </div>
   `).join('');
@@ -702,7 +1003,7 @@ function renderCats() {
   }
   const groups = {};
   expenses.forEach(t => { groups[t.category] = (groups[t.category] || 0) + t.amount; });
-  const total = Object.values(groups).reduce((s,v) => s+v, 0);
+  const total  = Object.values(groups).reduce((s,v) => s+v, 0);
   const sorted = Object.entries(groups).sort((a,b) => b[1]-a[1]).slice(0,6);
 
   bar.innerHTML = sorted.map(([cat, val]) => `
@@ -715,20 +1016,16 @@ function renderCats() {
 }
 
 function renderChart() {
-  const ctx = document.getElementById('chart').getContext('2d');
-  const months = [];
-  const incData = [];
-  const expData = [];
+  const ctx     = document.getElementById('chart').getContext('2d');
+  const months  = [], incData = [], expData = [];
+  const now     = new Date();
 
-  const now = new Date();
   for (let i = 5; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const d   = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     months.push(d.toLocaleString('id-ID', {month:'short'}));
-    const inc = transactions.filter(t => t.type==='income' && t.date.startsWith(key)).reduce((s,t)=>s+t.amount,0);
-    const exp = transactions.filter(t => t.type==='expense' && t.date.startsWith(key)).reduce((s,t)=>s+t.amount,0);
-    incData.push(parseFloat(inc.toFixed(2)));
-    expData.push(parseFloat(exp.toFixed(2)));
+    incData.push(transactions.filter(t => t.type==='income'  && t.date.startsWith(key)).reduce((s,t)=>s+t.amount,0));
+    expData.push(transactions.filter(t => t.type==='expense' && t.date.startsWith(key)).reduce((s,t)=>s+t.amount,0));
   }
 
   if (chart) chart.destroy();
@@ -737,7 +1034,7 @@ function renderChart() {
     data: {
       labels: months,
       datasets: [
-        { label: 'Income', data: incData, backgroundColor: 'rgba(63,185,80,0.7)', borderRadius: 5, borderSkipped: false },
+        { label: 'Income',  data: incData, backgroundColor: 'rgba(63,185,80,0.7)',  borderRadius: 5, borderSkipped: false },
         { label: 'Expense', data: expData, backgroundColor: 'rgba(248,81,73,0.7)', borderRadius: 5, borderSkipped: false }
       ]
     },
@@ -748,28 +1045,16 @@ function renderChart() {
         legend: { labels: { color: '#7d8590', font: { family: 'DM Sans', size: 11 }, boxWidth: 10, padding: 14 } },
         tooltip: {
           callbacks: { label: ctx => ' ' + fmt(ctx.parsed.y) },
-          backgroundColor: '#1c2333',
-          borderColor: 'rgba(255,255,255,0.07)',
-          borderWidth: 1,
-          titleColor: '#e6edf3',
-          bodyColor: '#7d8590'
+          backgroundColor: '#1c2333', borderColor: 'rgba(255,255,255,0.07)', borderWidth: 1,
+          titleColor: '#e6edf3', bodyColor: '#7d8590'
         }
       },
       scales: {
         x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7d8590', font: { family: 'DM Sans', size: 11 } } },
-        y: {
-          grid: { color: 'rgba(255,255,255,0.04)' },
-          ticks: { color: '#7d8590', font: { family: 'DM Sans', size: 10 }, callback: v => 'Rp\u00a0'+v.toLocaleString('id-ID') }
-        }
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#7d8590', font: { family: 'DM Sans', size: 10 }, callback: v => 'Rp\u00a0'+v.toLocaleString('id-ID') } }
       }
     }
   });
-}
-
-function formatDate(d) {
-  if (!d) return '';
-  const [y,m,day] = d.split('-');
-  return new Date(y,m-1,day).toLocaleDateString('id-ID',{month:'short',day:'numeric',year:'numeric'});
 }
 
 function deleteTx(id) {
@@ -778,19 +1063,19 @@ function deleteTx(id) {
   showToast('Transaction removed.');
 }
 
-// ── EVENTS ──
-document.querySelectorAll('.type-btn').forEach(btn => {
+// ── DASHBOARD EVENTS ──
+document.querySelectorAll('.type-btn[data-type]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.type-btn[data-type]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentType = btn.dataset.type;
     updateCatOptions();
   });
 });
 
-document.querySelectorAll('.filter-btn').forEach(btn => {
+document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentFilter = btn.dataset.filter;
     renderList();
@@ -798,75 +1083,260 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 document.getElementById('add-btn').addEventListener('click', () => {
-  const desc = document.getElementById('f-desc').value.trim();
+  const desc   = document.getElementById('f-desc').value.trim();
   const amount = parseFloat(document.getElementById('f-amount').value);
-  const cat = document.getElementById('f-cat').value;
-  const date = document.getElementById('f-date').value;
+  const cat    = document.getElementById('f-cat').value;
+  const date   = document.getElementById('f-date').value;
 
-  if (!desc) { showToast('Please enter a description.'); return; }
+  if (!desc)              { showToast('Please enter a description.'); return; }
   if (!amount || amount <= 0) { showToast('Please enter a valid amount.'); return; }
-  if (!date) { showToast('Please select a date.'); return; }
+  if (!date)              { showToast('Please select a date.'); return; }
 
   transactions.push({ id: Date.now().toString(), type: currentType, desc, amount, category: cat, date });
   save(); render();
-
   document.getElementById('f-desc').value = '';
   document.getElementById('f-amount').value = '';
-  showToast(currentType === 'income' ? '+ Income added!' : '- Expense recorded!');
+  showToast(currentType === 'income' ? '+ Income added!' : '− Expense recorded!');
 });
 
-// ── INIT ──
-document.getElementById('header-date').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
-document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
-updateCatOptions();
-render();
 document.getElementById('calc-budget').addEventListener('click', () => {
   const nextSalary = document.getElementById('next-salary-date').value;
-  if (!nextSalary) {
-    showToast('Please select next salary date.');
+  if (!nextSalary) { showToast('Please select next salary date.'); return; }
+
+  const today  = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(nextSalary); target.setHours(0,0,0,0);
+  let days = Math.ceil((target - today) / 86400000);
+  if (new Date().getHours() >= 19) days--;
+  if (days < 1) days = 1;
+
+  const bal = transactions.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0)
+            - transactions.filter(t=>t.type==='expense').reduce((s,t)=>s+t.amount,0);
+
+  document.getElementById('remaining-days').value = days + ' days';
+  document.getElementById('daily-budget').value   = fmt(bal / days);
+  showToast(bal <= 0 ? 'Warning: balance is low or negative.' : 'Budget calculated.');
+});
+
+// ═══════════════════════════════════════════
+// SAVINGS
+// ═══════════════════════════════════════════
+function renderSavings() {
+  const allIn  = savingsTx.filter(t => t.dir === 'in');
+  const allOut = savingsTx.filter(t => t.dir === 'out');
+  const totIn  = allIn.reduce((s,t)  => s + t.amount, 0);
+  const totOut = allOut.reduce((s,t) => s + t.amount, 0);
+  const svTotal = savingsGoals.reduce((s,g) => s + g.saved, 0);
+
+  document.getElementById('sv-total').textContent     = fmt(svTotal);
+  document.getElementById('sv-in').textContent        = fmt(totIn);
+  document.getElementById('sv-out').textContent       = fmt(totOut);
+  document.getElementById('sv-in-count').textContent  = allIn.length + ' deposit' + (allIn.length !== 1 ? 's' : '');
+  document.getElementById('sv-out-count').textContent = allOut.length + ' withdrawal' + (allOut.length !== 1 ? 's' : '');
+
+  renderGoalsList();
+  renderSvHistory();
+  renderFundGoalSelect();
+  updateGoalDetail();
+}
+
+function renderGoalsList() {
+  const el = document.getElementById('goals-list');
+  let list  = savingsGoals;
+
+  if (currentSvFilter === 'active') list = list.filter(g => g.saved < g.target);
+  if (currentSvFilter === 'done')   list = list.filter(g => g.saved >= g.target);
+
+  if (!list.length) {
+    el.innerHTML = '<div class="tx-empty">No goals found.</div>';
     return;
   }
 
-const today = new Date();
-today.setHours(0,0,0,0);
-
-const target = new Date(nextSalary);
-target.setHours(0,0,0,0);
-
-const diffTime = target - today;
-const now = new Date();
-const currentHour = now.getHours();
-
-let days = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-// kalau sudah lewat jam 7 malam → kurangi 1 hari
-if (currentHour >= 19) {
-  days -= 1;
+  el.innerHTML = list.map(g => {
+    const pct  = g.target > 0 ? Math.min(100, (g.saved / g.target * 100)) : 0;
+    const done = g.saved >= g.target && g.target > 0;
+    const isSelected = g.id === selectedGoalId;
+    return `
+      <div class="goal-item ${isSelected ? 'active-goal' : ''}" onclick="selectGoal('${g.id}')">
+        <div class="goal-item-top">
+          <div class="goal-item-name">${g.icon} ${g.name} ${done ? '✓' : ''}</div>
+          <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="goal-item-pct">${pct.toFixed(0)}%</span>
+            <button class="goal-delete" onclick="event.stopPropagation();deleteGoal('${g.id}')">✕</button>
+          </div>
+        </div>
+        <div class="goal-progress-track">
+          <div class="goal-progress-fill" style="width:${pct}%;${done ? 'background:var(--green)' : ''}"></div>
+        </div>
+        <div class="goal-item-amounts">
+          <span class="goal-item-saved">${fmt(g.saved)}</span>
+          <span class="goal-item-target">of ${fmt(g.target)}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
-// minimal 1 hari
-if (days < 1) days = 1;
+function selectGoal(id) {
+  selectedGoalId = selectedGoalId === id ? null : id;
+  renderGoalsList();
+  updateGoalDetail();
+  renderSvHistory();
 
-if (days < 1) days = 1; // biar nggak 0 atau minus
-  const inc = transactions.filter(t => t.type === 'income')
-    .reduce((s,t) => s + t.amount, 0);
+  // also pre-select in fund form
+  const sel = document.getElementById('sv-fund-goal');
+  if (sel && id) sel.value = id;
+}
 
-  const exp = transactions.filter(t => t.type === 'expense')
-    .reduce((s,t) => s + t.amount, 0);
+function updateGoalDetail() {
+  const panel = document.getElementById('goal-detail-panel');
+  if (!selectedGoalId) { panel.style.display = 'none'; return; }
+  const g = savingsGoals.find(g => g.id === selectedGoalId);
+  if (!g) { panel.style.display = 'none'; return; }
 
-  const balance = inc - exp;
+  panel.style.display = '';
+  document.getElementById('goal-detail-name').textContent = g.icon + ' ' + g.name;
 
-  const daily = balance / days;
+  const pct  = g.target > 0 ? Math.min(100, g.saved / g.target * 100) : 0;
+  const circ = 2 * Math.PI * 52; // r=52
+  const offset = circ - (pct / 100) * circ;
 
-  document.getElementById('remaining-days').value = days + ' days';
-  document.getElementById('daily-budget').value = fmt(daily);
+  document.getElementById('ring-fill').style.strokeDashoffset = offset;
+  document.getElementById('ring-fill').style.stroke = g.saved >= g.target && g.target > 0 ? 'var(--green)' : 'var(--blue)';
+  document.getElementById('goal-detail-pct').textContent = pct.toFixed(0) + '%';
+  document.getElementById('goal-detail-amounts').textContent = fmt(g.saved) + ' / ' + fmt(g.target);
+}
 
-  if (balance <= 0) {
-    showToast('Warning: your balance is low or negative.');
+function renderSvHistory() {
+  const el   = document.getElementById('sv-history');
+  const label = document.getElementById('sv-history-label');
+  let list   = [...savingsTx].reverse();
+
+  if (selectedGoalId) {
+    const g = savingsGoals.find(g => g.id === selectedGoalId);
+    list    = list.filter(t => t.goalId === selectedGoalId);
+    label.textContent = g ? g.icon + ' ' + g.name : 'Selected goal';
   } else {
-    showToast('Budget calculated.');
+    label.textContent = 'All goals';
   }
+
+  if (!list.length) {
+    el.innerHTML = '<div class="tx-empty">No transactions yet.</div>';
+    return;
+  }
+
+  el.innerHTML = list.map(tx => {
+    const g = savingsGoals.find(g => g.id === tx.goalId);
+    return `
+      <div class="tx-item">
+        <div class="tx-icon ${tx.dir === 'in' ? 'savings-in' : 'savings-out'}">${tx.dir === 'in' ? '💰' : '💸'}</div>
+        <div class="tx-info">
+          <div class="tx-name">${tx.note || (tx.dir === 'in' ? 'Deposit' : 'Withdrawal')}</div>
+          <div class="tx-meta">${g ? g.icon + ' ' + g.name : 'Unknown'} · ${formatDate(tx.date)}</div>
+        </div>
+        <div class="tx-amount ${tx.dir === 'in' ? 'savings-in' : 'savings-out'}">${tx.dir === 'in' ? '+' : '−'}${fmt(tx.amount)}</div>
+        <button class="tx-delete" onclick="deleteSvTx('${tx.id}')" title="Delete">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderFundGoalSelect() {
+  const sel = document.getElementById('sv-fund-goal');
+  if (!savingsGoals.length) {
+    sel.innerHTML = '<option value="">— Create a goal first —</option>';
+    return;
+  }
+  sel.innerHTML = savingsGoals.map(g => `<option value="${g.id}">${g.icon} ${g.name} (${fmt(g.saved)})</option>`).join('');
+  if (selectedGoalId) sel.value = selectedGoalId;
+}
+
+function deleteGoal(id) {
+  if (!confirm('Delete this goal and all its transactions?')) return;
+  savingsGoals = savingsGoals.filter(g => g.id !== id);
+  savingsTx    = savingsTx.filter(t => t.goalId !== id);
+  if (selectedGoalId === id) selectedGoalId = null;
+  save(); renderSavings();
+  showToast('Goal deleted.');
+}
+
+function deleteSvTx(id) {
+  const tx = savingsTx.find(t => t.id === id);
+  if (!tx) return;
+  const g = savingsGoals.find(g => g.id === tx.goalId);
+  if (g) g.saved = Math.max(0, g.saved + (tx.dir === 'in' ? -tx.amount : tx.amount));
+  savingsTx = savingsTx.filter(t => t.id !== id);
+  save(); renderSavings(); render();
+  showToast('Transaction removed.');
+}
+
+// ── SAVINGS EVENTS ──
+document.getElementById('sv-add-goal').addEventListener('click', () => {
+  const name   = document.getElementById('sv-goal-name').value.trim();
+  const target = parseFloat(document.getElementById('sv-goal-target').value);
+  const date   = document.getElementById('sv-goal-date').value;
+  const icon   = document.getElementById('sv-goal-icon').value;
+
+  if (!name)               { showToast('Please enter a goal name.'); return; }
+  if (!target || target <= 0) { showToast('Please enter a valid target amount.'); return; }
+
+  const goal = { id: Date.now().toString(), name, target, saved: 0, date: date || null, icon };
+  savingsGoals.push(goal);
+  save(); renderSavings(); render();
+
+  document.getElementById('sv-goal-name').value   = '';
+  document.getElementById('sv-goal-target').value = '';
+  document.getElementById('sv-goal-date').value   = '';
+  showToast('Goal created!');
 });
+
+document.getElementById('sv-add-fund').addEventListener('click', () => {
+  const goalId = document.getElementById('sv-fund-goal').value;
+  const amount = parseFloat(document.getElementById('sv-fund-amount').value);
+  const note   = document.getElementById('sv-fund-note').value.trim();
+  const date   = document.getElementById('sv-fund-date').value;
+
+  if (!goalId)              { showToast('Please select a goal.'); return; }
+  if (!amount || amount <= 0) { showToast('Please enter a valid amount.'); return; }
+  if (!date)                { showToast('Please select a date.'); return; }
+
+  const goal = savingsGoals.find(g => g.id === goalId);
+  if (!goal) return;
+
+  if (currentSvType === 'out' && amount > goal.saved) {
+    showToast('Amount exceeds current savings in this goal.'); return;
+  }
+
+  goal.saved += currentSvType === 'in' ? amount : -amount;
+  savingsTx.push({ id: Date.now().toString(), goalId, dir: currentSvType, amount, note, date });
+  save(); renderSavings(); render();
+
+  document.getElementById('sv-fund-amount').value = '';
+  document.getElementById('sv-fund-note').value   = '';
+
+  const done = goal.saved >= goal.target && goal.target > 0;
+  showToast(done ? '🎉 Goal reached!' : (currentSvType === 'in' ? '+ Funds added!' : '− Withdrawn.'));
+});
+
+document.querySelectorAll('.type-btn[data-sv-type]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.type-btn[data-sv-type]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSvType = btn.dataset.svType;
+  });
+});
+
+document.querySelectorAll('.filter-btn[data-sv-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn[data-sv-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentSvFilter = btn.dataset.svFilter;
+    renderGoalsList();
+  });
+});
+
+// ═══════════════════════════════════════════
+// CALCULATOR
+// ═══════════════════════════════════════════
 (function() {
   const disp = document.getElementById('calc-display');
   const expr = document.getElementById('calc-expr');
@@ -883,10 +1353,7 @@ if (days < 1) days = 1; // biar nggak 0 atau minus
   }
 
   function toDisplay(s) { return s.replace(/\*/g,'×').replace(/\//g,'÷'); }
-
-  function refresh() {
-    disp.textContent = input ? toDisplay(input).slice(-24) : '0';
-  }
+  function refresh() { disp.textContent = input ? toDisplay(input).slice(-24) : '0'; }
 
   function appendToken(t) {
     if (justEvaled && /\d|\./.test(t)) { input = t; justEvaled = false; }
@@ -897,14 +1364,11 @@ if (days < 1) days = 1; // biar nggak 0 atau minus
   document.querySelectorAll('.calc-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const a = btn.dataset.action;
-      if (a === 'clear') { input = ''; justEvaled = false; expr.textContent = ''; disp.textContent = '0'; }
-      else if (a === 'back') { if (justEvaled) { input = ''; justEvaled = false; } input = input.slice(0,-1); refresh(); }
-      else if (a === 'num') { appendToken(btn.dataset.val); }
+      if (a === 'clear')  { input = ''; justEvaled = false; expr.textContent = ''; disp.textContent = '0'; }
+      else if (a === 'back')   { if (justEvaled) { input = ''; justEvaled = false; } input = input.slice(0,-1); refresh(); }
+      else if (a === 'num')    { appendToken(btn.dataset.val); }
       else if (a === 'num000') { if (input && input !== '0') appendToken('000'); }
-      else if (a === 'dot') {
-        const last = input.split(/[+\-*/]/).pop();
-        if (!last.includes('.')) appendToken('.');
-      }
+      else if (a === 'dot')    { const last = input.split(/[+\-*/]/).pop(); if (!last.includes('.')) appendToken('.'); }
       else if (a === 'op') {
         justEvaled = false;
         if (input === '' && btn.dataset.val !== '-') return;
@@ -922,18 +1386,25 @@ if (days < 1) days = 1; // biar nggak 0 atau minus
   });
 
   document.addEventListener('keydown', e => {
-  const tag = document.activeElement.tagName;
-  const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-  if (isTyping) return; // jangan proses kalau user lagi di field lain
-
-  if (e.key >= '0' && e.key <= '9') appendToken(e.key);
-  else if (['+','-','*','/','%'].includes(e.key)) { const b = document.querySelector(`.calc-btn[data-val="${e.key}"]`); if(b) b.click(); }
-  else if (e.key === '.') document.querySelector('[data-action="dot"]').click();
-  else if (e.key === 'Enter' || e.key === '=') document.querySelector('[data-action="eq"]').click();
-  else if (e.key === 'Backspace') document.querySelector('[data-action="back"]').click();
-  else if (e.key === 'Escape') document.querySelector('[data-action="clear"]').click();
-});
+    const tag = document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (e.key >= '0' && e.key <= '9') appendToken(e.key);
+    else if (['+','-','*','/','%'].includes(e.key)) { const b = document.querySelector(`.calc-btn[data-val="${e.key}"]`); if(b) b.click(); }
+    else if (e.key === '.') document.querySelector('[data-action="dot"]').click();
+    else if (e.key === 'Enter' || e.key === '=') document.querySelector('[data-action="eq"]').click();
+    else if (e.key === 'Backspace') document.querySelector('[data-action="back"]').click();
+    else if (e.key === 'Escape') document.querySelector('[data-action="clear"]').click();
+  });
 })();
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+document.getElementById('header-date').textContent = new Date().toLocaleDateString('id-ID', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+document.getElementById('f-date').value     = new Date().toISOString().split('T')[0];
+document.getElementById('sv-fund-date').value = new Date().toISOString().split('T')[0];
+updateCatOptions();
+render();
 </script>
 </body>
 </html>
