@@ -650,6 +650,7 @@
               <button class="calc-btn" data-action="num" data-val="0">0</button>
               <button class="calc-btn" data-action="dot">.</button>
               <button class="calc-btn eq" data-action="eq">=</button>
+             <button class="calc-btn" data-action="net" style="grid-column: span 4; font-size:0.78rem; color:var(--blue); border-color:rgba(88,166,255,0.2);">NET BALANCE</button>
             </div>
           </div>
         </div>
@@ -1375,6 +1376,14 @@ document.querySelectorAll('.filter-btn[data-sv-filter]').forEach(btn => {
         if (['+','-','*','/','%'].includes(input.slice(-1))) input = input.slice(0,-1);
         appendToken(btn.dataset.val);
       }
+       else if (a === 'net') {
+  const inc = transactions.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+  const exp = transactions.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+  const net = inc - exp;
+  if (justEvaled) justEvaled = false;
+  input += String(net);
+  refresh();
+}
       else if (a === 'eq') {
         if (!input) return;
         const ex = toDisplay(input);
